@@ -1,53 +1,50 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Two Player Rock Paper Scissors</title>
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
-
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
     <h1>Rock Paper Scissors</h1>
 
-    <h2 id="player-info">Waiting for player...</h2>
-
-    <div class="room-controls">
-        <button id="create-room">Create Room</button>
-        <input type="text" id="room-input" placeholder="Enter Room Code">
-        <button id="join-room">Join Room</button>
+    <div class="top-bar">
+      <input type="text" id="name-input" placeholder="Enter your name" />
+      <button id="create-room">Create Room</button>
+      <input type="text" id="room-input" placeholder="Room Code" />
+      <button id="join-room">Join Room</button>
+      <button id="copy-btn">Copy Code</button>
     </div>
 
+    <h2 id="player-info"></h2>
+
     <div class="choices">
-        <div class="choice" id="rock">
-            <img src="Images/Rock.jpg">
-        </div>
-        <div class="choice" id="paper">
-            <img src="Images/Paper.jpg">
-        </div>
-        <div class="choice" id="scissors">
-            <img src="Images/Scissor.jpg">
-        </div>
+      <div class="choice" id="rock"><img src="./Images/Rock.jpg" /></div>
+      <div class="choice" id="paper"><img src="./Images/Paper.jpg" /></div>
+      <div class="choice" id="scissors"><img src="./Images/Scissor.jpg" /></div>
     </div>
 
     <div class="score-board">
-        <div class="score">
-            <p id="player1-score">0</p>
-            <p>Player 1</p>
-        </div>
-        <div class="score">
-            <p id="player2-score">0</p>
-            <p>Player 2</p>
-        </div>
+      <div>
+        <p id="player1-score">0</p>
+        <p id="p1-name">Player 1</p>
+      </div>
+      <div>
+        <p id="player2-score">0</p>
+        <p id="p2-name">Player 2</p>
+      </div>
     </div>
 
-    <div class="msg-container">
-        <p id="msg">Create or Join a Room</p>
+    <p id="msg">Start Game</p>
+
+    <div class="chat">
+      <div id="chat-box"></div>
+      <input type="text" id="chat-input" placeholder="Type message" />
+      <button id="send-btn">Send</button>
     </div>
 
     <script src="/socket.io/socket.io.js"></script>
-
     <script src="app.js"></script>
-
-</body>
+  </body>
 </html>

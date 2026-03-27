@@ -1,132 +1,120 @@
-console.log("JS Loaded Successfully");
-
 const socket = io();
 
 let playerNumber = 0;
-let canPlay = false;
 let roomCode = "";
+let name = "";
 
-let player1Score = 0;
-let player2Score = 0;
+let p1Score = 0;
+let p2Score = 0;
 
-const msg = document.querySelector("#msg");
-const playerInfo = document.querySelector("#player-info");
+const msg = document.getElementById("msg");
+const playerInfo = document.getElementById("player-info");
+const p1Name = document.getElementById("p1-name");
+const p2Name = document.getElementById("p2-name");
+const chatBox = document.getElementById("chat-box");
 
-const p1Score = document.querySelector("#player1-score");
-const p2Score = document.querySelector("#player2-score");
-
-const choices = document.querySelectorAll(".choice");
-
-const createBtn = document.querySelector("#create-room");
-const joinBtn = document.querySelector("#join-room");
-const input = document.querySelector("#room-input");
-
-createBtn.onclick = () => {
-    socket.emit("create-room");
-};
-
-joinBtn.onclick = () => {
-    roomCode = input.value.trim();
-    if(roomCode === "") return;
-
-    socket.emit("join-room", roomCode);
-};
-
-socket.on("room-created", (code) => {
-    console.log("Room created:", code);
-
-    roomCode = code;
-    msg.innerText = "Room Code: " + code + " (Share with friend)";
-});
-
-socket.on("player-number", (num) => {
-    playerNumber = num;
-
-    playerInfo.innerText = "You are Player " + num;
-
-    if(num === 1){
-        msg.innerText = "Room: " + roomCode + " | Waiting for Player 2...";
-    } else {
-        msg.innerText = "Game Start! Choose your move";
-        canPlay = true;
-    }
-});
-
-socket.on("start", () => {
-    canPlay = true;
-    msg.innerText = "Game Started! Choose your move";
-});
-
-socket.on("room-full", () => {
-    msg.innerText = "Room is Full!";
-});
-
-socket.on("msg", (text) => {
+function showMsg(text, type="") {
     msg.innerText = text;
-    canPlay = false;
-});
+    msg.className = "";
+    if(type) msg.classList.add(type);
+}
 
-choices.forEach(choice => {
-    choice.addEventListener("click", () => {
-        if(!canPlay) return;
-
-        const userChoice = choice.getAttribute("id");
-
-        choices.forEach(c => c.classList.remove("selected"));
-        choice.classList.add("selected");
-
-        socket.emit("choice", {
-            roomCode,
-            choice: userChoice
-        });
-
-        msg.innerText = "Waiting for opponent...";
-        canPlay = false;
-    });
-});
-
-socket.on("result", (data) => {
-    let text = "";
-
-    if(data.result === "draw"){
-        text = "Draw!";
-        msg.className = "draw";
-    } 
-    else if(
-        (data.result === "p1" && playerNumber === 1) ||
-        (data.result === "p2" && playerNumber === 2)
-    ){
-        text = "You Win!";
-        msg.className = "win";
-
-        if(playerNumber === 1){
-            player1Score++;
-            p1Score.innerText = player1Score;
-        } else {
-            player2Score++;
-            p2Score.innerText = player2Score;
-        }
-    } 
-    else {
-        text = "You Lose!";
-        msg.className = "lose";
-
-        if(playerNumber === 1){
-            player2Score++;
-            p2Score.innerText = player2Score;
-        } else {
-            player1Score++;
-            p1Score.innerText = player1Score;
-        }
-    }
-
-    msg.innerText = text + ` (P1: ${data.p1} | P2: ${data.p2})`;
-
+function showToast(text, type = "info") {
+    const toast = document.createElement("div");
+    toast.className = `toast-msg ${type}`;
+    toast.innerText = text;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.classList.add("show"), 10);
     setTimeout(() => {
-        msg.className = "";
-        msg.innerText = "Next Round - Choose!";
-        canPlay = true;
+        toast.classList.remove("show");
+        setTimeout(() => toast.remove(), 300);
+    }, 1500);
+}
 
-        choices.forEach(c => c.classList.remove("selected"));
-    }, 2000);
+document.getElementById("create-room").onclick = () => {
+    name = document.getElementById("name-input").value.trim();
+    if (!name) return showToast("Please enter your name!", "error");
+    socket.emit("create-room", name);
+    showToast("Room created!", "info");
+};
+
+document.getElementById("join-room").onclick = () => {
+    roomCode = document.getElementById("room-input").value.trim();
+    name = document.getElementById("name-input").value.trim();
+    if (!name) return showToast("Please enter your name!", "error");
+    if (!roomCode) return showToast("Enter room code!", "error");
+    socket.emit("join-room", {roomCode, name});
+    showToast("Joined room " + roomCode, "success");
+    showMsg("Joined room " + roomCode, "info");
+};
+
+document.getElementById("copy-btn").onclick = () => {
+    if (!roomCode) return showToast("No room code to copy", "error");
+    navigator.clipboard.writeText(roomCode);
+    showToast("Room code copied!", "success");
+};
+
+document.getElementById("send-btn").onclick = () => {
+    const msgText = document.getElementById("chat-input").value.trim();
+    if (!msgText) return showToast("Enter a message to send", "info");
+    socket.emit("chat", {roomCode, name, msg: msgText});
+    document.getElementById("chat-input").value = "";
+};
+
+socket.on("chat", data => {
+    const p = document.createElement("p");
+    p.innerHTML = `<b>${data.name}:</b> ${data.msg}`;
+    chatBox.appendChild(p);
+    chatBox.scrollTop = chatBox.scrollHeight;
+});
+
+socket.on("room-created", code => {
+    roomCode = code;
+    showMsg("Room created: " + code, "info");
+});
+
+socket.on("player-number", num => {
+    playerNumber = num;
+    playerInfo.innerText = "You are Player " + num;
+});
+
+socket.on("names", data => {
+    p1Name.innerText = data.p1 || "Player 1";
+    p2Name.innerText = data.p2 || "Player 2";
+});
+
+socket.on("match-started", () => {
+    showMsg("Match Started!", "info");
+});
+
+document.querySelectorAll(".choice").forEach(choice => {
+    choice.onclick = () => {
+        if (!roomCode) return showToast("Join or create a room first", "error");
+        socket.emit("choice", {roomCode, choice: choice.id});
+    };
+});
+
+socket.on("result", data => {
+    let winnerName = "";
+    let isCurrentPlayer = false;
+    if(data.result === "p1") {
+        p1Score++;
+        winnerName = p1Name.innerText || "Player 1";
+        isCurrentPlayer = playerNumber === 1;
+        showMsg(`${winnerName} wins!`, "success");
+        showToast(isCurrentPlayer ? "You won!" : "Opponent won!", isCurrentPlayer ? "success" : "error");
+    }
+    else if(data.result === "p2") {
+        p2Score++;
+        winnerName = p2Name.innerText || "Player 2";
+        isCurrentPlayer = playerNumber === 2;
+        showMsg(`${winnerName} wins!`, "error");
+        showToast(isCurrentPlayer ? "You won!" : "Opponent won!", isCurrentPlayer ? "success" : "error");
+    }
+    else if(data.result === "draw") {
+        showMsg("Draw!", "draw");
+        showToast("Draw!", "draw");
+    }
+    document.getElementById("player1-score").innerText = p1Score;
+    document.getElementById("player2-score").innerText = p2Score;
 });
