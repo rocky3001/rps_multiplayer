@@ -1,7 +1,11 @@
 const express = require("express");
 const app = express();
 const http = require("http").createServer(app);
-const io = require("socket.io")(http);
+const io = require("socket.io")(http, {
+    cors: {
+        origin: "*"
+    }
+});
 
 app.use(express.static("public"));
 
@@ -19,6 +23,8 @@ io.on("connection", (socket) => {
         };
 
         socket.join(roomCode);
+
+        socket.emit("player-number", 1);
         socket.emit("room-created", roomCode);
     });
 
@@ -31,12 +37,6 @@ io.on("connection", (socket) => {
             io.to(roomCode).emit("start");
         } else {
             socket.emit("room-full");
-        }
-    });
-
-    socket.on("get-player1", (roomCode) => {
-        if(rooms[roomCode]){
-            socket.emit("player-number", 1);
         }
     });
 
@@ -64,6 +64,7 @@ io.on("connection", (socket) => {
     socket.on("disconnect", () => {
         for(let code in rooms){
             let room = rooms[code];
+
             room.players = room.players.filter(id => id !== socket.id);
 
             if(room.players.length === 0){
@@ -88,4 +89,8 @@ function getResult(c1, c2){
     return "p2";
 }
 
-http.listen(3000, () => console.log("Server running on port 3000"));
+const PORT = process.env.PORT || 3000;
+
+http.listen(PORT, () => {
+    console.log("Server running on port " + PORT);
+});
