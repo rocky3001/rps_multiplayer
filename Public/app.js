@@ -9,7 +9,6 @@ let roomCode = "";
 let player1Score = 0;
 let player2Score = 0;
 
-/* ELEMENTS */
 const msg = document.querySelector("#msg");
 const playerInfo = document.querySelector("#player-info");
 
@@ -22,12 +21,10 @@ const createBtn = document.querySelector("#create-room");
 const joinBtn = document.querySelector("#join-room");
 const input = document.querySelector("#room-input");
 
-/* CREATE ROOM */
 createBtn.onclick = () => {
     socket.emit("create-room");
 };
 
-/* JOIN ROOM */
 joinBtn.onclick = () => {
     roomCode = input.value.trim();
     if(roomCode === "") return;
@@ -35,7 +32,6 @@ joinBtn.onclick = () => {
     socket.emit("join-room", roomCode);
 };
 
-/* ROOM CREATED */
 socket.on("room-created", (code) => {
     console.log("Room created:", code);
 
@@ -43,7 +39,6 @@ socket.on("room-created", (code) => {
     msg.innerText = "Room Code: " + code + " (Share with friend)";
 });
 
-/* PLAYER ASSIGN */
 socket.on("player-number", (num) => {
     playerNumber = num;
 
@@ -57,31 +52,26 @@ socket.on("player-number", (num) => {
     }
 });
 
-/* START GAME */
 socket.on("start", () => {
     canPlay = true;
     msg.innerText = "Game Started! Choose your move";
 });
 
-/* ROOM FULL */
 socket.on("room-full", () => {
     msg.innerText = "Room is Full!";
 });
 
-/* MESSAGE */
 socket.on("msg", (text) => {
     msg.innerText = text;
     canPlay = false;
 });
 
-/* CLICK EVENT */
 choices.forEach(choice => {
     choice.addEventListener("click", () => {
         if(!canPlay) return;
 
         const userChoice = choice.getAttribute("id");
 
-        // highlight selected
         choices.forEach(c => c.classList.remove("selected"));
         choice.classList.add("selected");
 
@@ -95,7 +85,6 @@ choices.forEach(choice => {
     });
 });
 
-/* RESULT */
 socket.on("result", (data) => {
     let text = "";
 
@@ -138,7 +127,6 @@ socket.on("result", (data) => {
         msg.innerText = "Next Round - Choose!";
         canPlay = true;
 
-        // remove selection highlight
         choices.forEach(c => c.classList.remove("selected"));
     }, 2000);
 });

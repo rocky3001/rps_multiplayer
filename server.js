@@ -10,7 +10,6 @@ let rooms = {};
 io.on("connection", (socket) => {
     console.log("User connected:", socket.id);
 
-    /* CREATE ROOM */
     socket.on("create-room", () => {
         let roomCode = Math.random().toString(36).substring(2, 7);
 
@@ -23,7 +22,6 @@ io.on("connection", (socket) => {
         socket.emit("room-created", roomCode);
     });
 
-    /* JOIN ROOM */
     socket.on("join-room", (roomCode) => {
         if(rooms[roomCode] && rooms[roomCode].players.length < 2){
             rooms[roomCode].players.push(socket.id);
@@ -36,14 +34,12 @@ io.on("connection", (socket) => {
         }
     });
 
-    /* PLAYER 1 INFO */
     socket.on("get-player1", (roomCode) => {
         if(rooms[roomCode]){
             socket.emit("player-number", 1);
         }
     });
 
-    /* GAME CHOICE */
     socket.on("choice", ({roomCode, choice}) => {
         let room = rooms[roomCode];
         if(!room) return;
@@ -65,7 +61,6 @@ io.on("connection", (socket) => {
         }
     });
 
-    /* DISCONNECT */
     socket.on("disconnect", () => {
         for(let code in rooms){
             let room = rooms[code];
@@ -80,7 +75,6 @@ io.on("connection", (socket) => {
     });
 });
 
-/* GAME LOGIC */
 function getResult(c1, c2){
     if(c1 === c2) return "draw";
 
