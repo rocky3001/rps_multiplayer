@@ -13,7 +13,7 @@ io.on("connection", socket => {
         let code = Math.random().toString(36).substring(2,7);
 
         rooms[code] = {
-            players: [{id: socket.id, name}],
+            players: [{ id: socket.id, name }],
             choices: {}
         };
 
@@ -22,10 +22,11 @@ io.on("connection", socket => {
         socket.emit("player-number", 1);
     });
 
-    socket.on("join-room", ({roomCode, name}) => {
+    socket.on("join-room", ({ roomCode, name }) => {
         let room = rooms[roomCode];
-        if(room && room.players.length < 2){
-            room.players.push({id: socket.id, name});
+
+        if (room && room.players.length < 2) {
+            room.players.push({ id: socket.id, name });
             socket.join(roomCode);
 
             socket.emit("player-number", 2);
@@ -41,19 +42,28 @@ io.on("connection", socket => {
         io.to(data.roomCode).emit("chat", data);
     });
 
-    socket.on("choice", ({roomCode, choice}) => {
+    socket.on("choice", ({ roomCode, choice }) => {
         let room = rooms[roomCode];
-        if(!room) return;
+        if (!room) return;
 
         room.choices[socket.id] = choice;
 
-        if(Object.keys(room.choices).length === 2){
+        if (Object.keys(room.choices).length === 2) {
             let p1 = room.players[0].id;
             let p2 = room.players[1].id;
 
-            let result = getResult(room.choices[p1], room.choices[p2]);
+            let p1Choice = room.choices[p1];
+            let p2Choice = room.choices[p2];
 
-            io.to(roomCode).emit("result", {result});
+            if (!p1Choice || !p2Choice) return;
+
+            let result = getResult(p1Choice, p2Choice);
+
+            io.to(roomCode).emit("result", {
+                result,
+                p1Choice,
+                p2Choice
+            });
 
             room.choices = {};
         }
@@ -61,13 +71,15 @@ io.on("connection", socket => {
 
 });
 
-function getResult(a,b){
-    if(a===b) return "draw";
-    if(
-        (a==="rock"&&b==="scissors")||
-        (a==="paper"&&b==="rock")||
-        (a==="scissors"&&b==="paper")
+function getResult(a, b) {
+    if (a === b) return "draw";
+
+    if (
+        (a === "rock" && b === "scissors") ||
+        (a === "paper" && b === "rock") ||
+        (a === "scissors" && b === "paper")
     ) return "p1";
+
     return "p2";
 }
 

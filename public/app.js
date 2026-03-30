@@ -12,6 +12,7 @@ const playerInfo = document.getElementById("player-info");
 const p1Name = document.getElementById("p1-name");
 const p2Name = document.getElementById("p2-name");
 const chatBox = document.getElementById("chat-box");
+const movesDiv = document.getElementById("moves");
 
 function showMsg(text, type="") {
     msg.innerText = text;
@@ -31,6 +32,12 @@ function showToast(text, type = "info") {
     }, 1500);
 }
 
+function getEmoji(choice){
+    if(choice === "rock") return "🪨";
+    if(choice === "paper") return "📄";
+    if(choice === "scissors") return "✂️";
+}
+
 document.getElementById("create-room").onclick = () => {
     name = document.getElementById("name-input").value.trim();
     if (!name) return showToast("Please enter your name!", "error");
@@ -46,6 +53,8 @@ document.getElementById("join-room").onclick = () => {
     socket.emit("join-room", {roomCode, name});
     showToast("Joined room " + roomCode, "success");
     showMsg("Joined room " + roomCode, "info");
+
+    movesDiv.innerText = "Waiting for other player...";
 };
 
 document.getElementById("copy-btn").onclick = () => {
@@ -70,7 +79,8 @@ socket.on("chat", data => {
 
 socket.on("room-created", code => {
     roomCode = code;
-    showMsg("Room created: " + code, "info");
+    showMsg("Room Code: " + code, "info");
+    movesDiv.innerText = "Room Created! Waiting for opponent...";
 });
 
 socket.on("player-number", num => {
@@ -81,6 +91,8 @@ socket.on("player-number", num => {
 socket.on("names", data => {
     p1Name.innerText = data.p1 || "Player 1";
     p2Name.innerText = data.p2 || "Player 2";
+
+    movesDiv.innerText = "Room full! Choose your move...";
 });
 
 socket.on("match-started", () => {
@@ -91,13 +103,38 @@ document.querySelectorAll(".choice").forEach(choice => {
     choice.onclick = () => {
         if (!roomCode) return showToast("Join or create a room first", "error");
         socket.emit("choice", {roomCode, choice: choice.id});
+        movesDiv.innerText = "Waiting for opponent's move...";
     };
 });
 
 socket.on("result", data => {
     let winnerName = "";
     let isCurrentPlayer = false;
+    const p1 = p1Name.innerText;
+    const p2 = p2Name.innerText;
+    let p1Class = "player1";
+    let p2Class = "player2";
+
+    // Highlight winner
+    if(data.result === "p1") p1Class += " winner";
+    else if(data.result === "p2") p2Class += " winner";
+
+    movesDiv.innerHTML = `
+    <span class="${p1Class}">${p1}</span>
+    <span class="move">${getEmoji(data.p1Choice)} ${data.p1Choice}</span>
+
+    <span style="opacity:0.4;">VS</span>
+
+    <span class="${p2Class}">${p2}</span>
+    <span class="move">${getEmoji(data.p2Choice)} ${data.p2Choice}</span>`;
+
+    setTimeout(() => {
+        movesDiv.querySelectorAll(".winner").forEach(el => el.classList.remove("winner"));
+    }, 1500);
+
+
     if(data.result === "p1") {
+
         p1Score++;
         winnerName = p1Name.innerText || "Player 1";
         isCurrentPlayer = playerNumber === 1;
