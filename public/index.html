@@ -11,10 +11,52 @@
 
     <div class="top-bar">
       <input type="text" id="name-input" placeholder="Enter your name" />
+      <select id="emoji-select">
+        <option value="🐱">🐱 Cat</option>
+        <option value="🐶">🐶 Dog</option>
+        <option value="🦊">🦊 Fox</option>
+        <option value="🐼">🐼 Panda</option>
+        <option value="🦁">🦁 Lion</option>
+        <option value="🐸">🐸 Frog</option>
+        <option value="🐵">🐵 Monkey</option>
+        <option value="🦄">🦄 Unicorn</option>
+      </select>
+    
+      <select id="color-select">
+        <option value="#39ff14">Green</option>
+        <option value="#0ff">Cyan</option>
+        <option value="#ff00ff">Magenta</option>
+        <option value="#ff4500">Orange</option>
+        <option value="#00ffff">Aqua</option>
+        <option value="#ff1493">DeepPink</option>
+        <option value="#00ff00">Lime</option>
+        <option value="#1e90ff">DodgerBlue</option>
+        <option value="#ff69b4">HotPink</option>
+        <option value="#ffff00">Yellow</option>
+      </select>
+
       <button id="create-room">Create Room</button>
       <input type="text" id="room-input" placeholder="Room Code" />
       <button id="join-room">Join Room</button>
       <button id="copy-btn">Copy Code</button>
+      <div id="match-options">
+        <label for="best-of">Best of:</label>
+        <select id="best-of">
+          <option value="" selected>-</option>
+          <option value="5">5</option>
+          <option value="7">7</option>
+          <option value="11">11</option>
+        </select>
+      
+        <label for="first-to">First to:</label>
+        <select id="first-to">
+          <option value="" selected>-</option>
+          <option value="5">5</option>
+          <option value="7">7</option>
+          <option value="10">10</option>
+        </select>
+        <button id="new-match-btn">New Match</button>
+      </div>
     </div>
 
     <h2 id="player-info"></h2>
@@ -22,6 +64,7 @@
     <div id="moves-container">
       <div id="moves"></div>
     </div>
+
 
     <div class="choices">
       <div class="choice" id="rock"><img src="./Images/Rock.jpg" /></div>
